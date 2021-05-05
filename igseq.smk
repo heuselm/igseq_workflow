@@ -19,7 +19,7 @@ rule all:
 rule step1_checkout:
 	input: 	expand("00_input/{reads}.fastq.gz", reads = fastqpairedreads)
 	threads: 4
-	singularity: "../containers/igseq_container.simg"
+	singularity: "../../bin/containers/igseq_container.simg"
 	output:
 		#"01_checkout/complete_checkout.txt"
 		expand("01_checkout/{sample}_{read}.fastq.gz", sample=SAMPLES, read=read_num)
@@ -33,7 +33,7 @@ rule step1_checkout:
 rule step2_histogram:
 	input: expand("01_checkout/{sample}_{read}.fastq.gz", sample=SAMPLES, read=read_num)
 	output: "02_histogram/overseq.txt"
-	singularity: "../containers/igseq_container.simg"
+	singularity: "../../bin/containers/igseq_container.simg"
 	shell: 	"""
 			# mkdir 02_histogram
 			migec Histogram 01_checkout/ 02_histogram/
@@ -46,7 +46,7 @@ rule step3_assembleReadsByUmi:
 	threads: 6
 	resources:
 		mem_mb=24576
-	singularity: "../containers/igseq_container.simg"
+	singularity: "../../bin/containers/igseq_container.simg"
 	shell:	"""
 			ls -lisa 01_checkout/
 			ls -lisa 02_histogram/
@@ -68,7 +68,7 @@ rule step4_alignToGermline:
 	threads: 6
 	resources:
 		mem_mb=24576
-	singularity: "../containers/igseq_container.simg"
+	singularity: "../../bin/containers/igseq_container.simg"
 	shell: 	"""
 			echo 'analyzing sample: {input}'
 			echo 'current species: {params.spc}'
@@ -85,7 +85,7 @@ rule step5_assembleFinalClones:
 	output:
 		expand("05_finalclones/{{sample}}.clns", sample=SAMPLES)
 	threads: 6
-	singularity: "../containers/igseq_container.simg"
+	singularity: "../../bin/containers/igseq_container.simg"
 	shell:	"""
 			echo 'assembling final clones for: {input}'
 			java -Xmx24G -jar /usr/bin/mixcr/mixcr.jar assemble \
@@ -102,6 +102,6 @@ rule step6_exports:
 	output:
 		"05_finalclones/{sample}_clones_all.txt"
 	threads: 6
-	singularity: "../containers/igseq_container.simg"
+	singularity: "../../bin/containers/igseq_container.simg"
 	shell:	"java -jar /usr/bin/mixcr/mixcr.jar exportClones -ot {input} {output}"
 
